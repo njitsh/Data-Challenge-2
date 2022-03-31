@@ -6,7 +6,7 @@ import math
 from datetime import timedelta
 import glob
 import os
-from tqdm import tqdm as tqdm
+from tqdm import tqdm
 import time
 import seaborn as sns
 
@@ -21,12 +21,11 @@ from sklearn.metrics import mean_squared_error
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.stattools import adfuller
 
-import warnings
-warnings.filterwarnings('ignore')
-
 from numpy import cumsum
 from datetime import datetime as dt
 
+from warnings import filterwarnings
+filterwarnings('ignore')
 
 def ARIMA_DATA(df, MSOA, category):
     ###Gets the data of a specific MSOA and category to use in the ARIMA_OPTIMAL function
@@ -60,7 +59,7 @@ def ARIMA_OPTIMAL(stationary_data, MSOA, category):
             try:
             # Fit model
                 model = SARIMAX(stationary_data, order=(p,0,q), trend='c')
-                results = model.fit()
+                results = model.fit(disp=0)
                 # Add order and scores to list
                 order_aic_bic.append((p, q, results.aic))
             except:
@@ -120,20 +119,26 @@ def get_best_models(df):
 
 
 if __name__ == "__main__":
+    print("Open train set")
     Train = pd.read_csv("train_count_street_data.csv")
     Train.drop("Unnamed: 0", axis=1, inplace=True)
 
+    print("Open test set with covid")
     TestCovid = pd.read_csv("test_covid_count_street_data.csv")
     TestCovid.drop("Unnamed: 0", axis=1, inplace=True)
 
+    print("Open test set without covid")
     TestNoCovid = pd.read_csv("test_no_covid_count_street_data.csv")
     TestNoCovid.drop("Unnamed: 0", axis=1, inplace=True)
 
+    print("Open train set without covid")
     TrainWithNoCovid = pd.read_csv("train_with_no_covid_count_street_data.csv")
     TrainWithNoCovid.drop("Unnamed: 0", axis=1, inplace=True)
 
+    print("Train model on Train set")
     best_models_train = get_best_models(Train)
     best_models_train.to_csv("train_best_models.csv")
 
+    print("Train model on TrainWithNoCovid set")
     best_models_train_with_no_covid = get_best_models(TrainWithNoCovid)
     best_models_train_with_no_covid.to_csv("train_with_no_covid_best_models.csv")
