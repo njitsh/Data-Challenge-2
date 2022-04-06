@@ -41,20 +41,24 @@ def ARIMA_OPTIMAL(stationary_data, stationary_test):
         for q in range(1, 4):
             # Fit model
             model = SARIMAX(stationary_data, order=(p,0,q), trend='c')
-            results = model.fit(disp=0)
-
-            # Add order and scores to list
-            order_aic_bic.append((p, q, results.aic, results))
+            try:
+                results = model.fit(disp=0)
+                # Add order and scores to list
+                order_aic_bic.append((p, q, results.aic, results))
+            except:
+                order_aic_bic.append((p, q, np.inf, None))
             
     order_df = pd.DataFrame(order_aic_bic, columns=['p', 'q', 'aic', 'results'])
     optimum = order_df[order_df['aic'] == order_df['aic'].min()]
     optimum.reset_index(inplace=True)
 
     # MASE
-    forecast = results.get_forecast(steps=len(stationary_test.index) + 1)
-    mean_forecast = forecast.predicted_mean.to_frame()['predicted_mean']
-    mean_forecast.index = pd.to_datetime(mean_forecast.index, format = '%Y-%m-%d').strftime('%Y-%m')
-    mase = mase_loss(y_train=stationary_data['count'], y_pred=mean_forecast, y_test=stationary_test['count'])
+    mase = 0
+    if optimum['results'][0] is not None:
+        forecast = results.get_forecast(steps=len(stationary_test.index) + 1)
+        mean_forecast = forecast.predicted_mean.to_frame()['predicted_mean']
+        mean_forecast.index = pd.to_datetime(mean_forecast.index, format = '%Y-%m-%d').strftime('%Y-%m')
+        mase = mase_loss(y_train=stationary_data['count'], y_pred=mean_forecast, y_test=stationary_test['count'])
 
     return optimum['p'][0], optimum['q'][0], optimum['aic'][0], mase
 
@@ -123,6 +127,9 @@ if __name__ == "__main__":
     results = [None] * processes
 
     i = 0
+
+    # Create empty dataframe to store results
+    best_models = pd.DataFrame(columns=['MSOA', 'Crime type', 'p', 'q', 'aic', 'MASE'])
 
     # Create multithreaded processes
     for msoa_set in chunks(msoa_list, set_size):
