@@ -6,7 +6,6 @@ import math
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.stattools import adfuller
 from multiprocessing import Process
-import os
 
 from warnings import filterwarnings
 filterwarnings('ignore')
@@ -36,9 +35,9 @@ def ARIMA_OPTIMAL(stationary_data, stationary_test):
     order_aic_bic = list()
 
     # Loop over AR order
-    for p in range(1, 4):
+    for p in range(1, 5):
         # Loop over MA order
-        for q in range(1, 4):
+        for q in range(1, 5):
             # Fit model
             model = SARIMAX(stationary_data, order=(p,0,q), trend='c')
             try:
@@ -105,8 +104,9 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-def thread(df, df_test, result, index):
-    result[index] = get_best_models(df, df_test, index)
+def thread(df, df_test, index):
+    best_models = get_best_models(df, df_test, index)
+    best_models.to_csv("best_models_" + str(index + 1) + ".csv")
 
 
 if __name__ == "__main__":
@@ -124,7 +124,6 @@ if __name__ == "__main__":
     set_size = math.ceil(len(msoa_list) / processes)
 
     threads = [None] * processes
-    results = [None] * processes
 
     i = 0
 
@@ -133,14 +132,14 @@ if __name__ == "__main__":
 
     # Create multithreaded processes
     for msoa_set in chunks(msoa_list, set_size):
-        threads[i] = Process(target=thread, args=(train[train['MSOA'].isin(msoa_set)], test[test['MSOA'].isin(msoa_set)], results, i))
+        threads[i] = Process(target=thread, args=(train[train['MSOA'].isin(msoa_set)], test[test['MSOA'].isin(msoa_set)], i))
         threads[i].start()
         i += 1
 
-    for i in range(len(threads)):
-        threads[i].join()
-        best_models = pd.concat([best_models, results[i]], axis=0, ignore_index=True)
+    for index in range(len(threads)):
+        threads[index].join()
+        print("Exporting results from thread " + str(index + 1))
+        best_models = pd.concat([best_models, pd.read_csv("best_models_" + str(index + 1) + ".csv")], axis=0, ignore_index=True)
 
     print("Export best models")
-    best_models = get_best_models(train, test)
     best_models.to_csv("best_models.csv")
