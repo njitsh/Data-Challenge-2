@@ -1,9 +1,12 @@
+import multiprocessing
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
+import math
 
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.stattools import adfuller
+from multiprocessing import Process
+import os
 
 from warnings import filterwarnings
 filterwarnings('ignore')
@@ -33,9 +36,9 @@ def ARIMA_OPTIMAL(stationary_data, stationary_test):
     order_aic_bic = list()
 
     # Loop over AR order
-    for p in range(1, 3):
+    for p in range(1, 4):
         # Loop over MA order
-        for q in range(1, 3):
+        for q in range(1, 4):
             # Fit model
             model = SARIMAX(stationary_data, order=(p,0,q), trend='c')
             results = model.fit(disp=0)
@@ -73,10 +76,13 @@ def mase_loss(y_test, y_pred, y_train, sp=1):
         return np.mean(np.abs(y_test - y_pred)) / mae_naive
 
 
-def get_best_models(df, df_test):
+def get_best_models(df, df_test, index):
     param = list()
+
+    models_trained = 0
+    total_msoas = len(df['MSOA'].unique())
     
-    for msoa in tqdm(df['MSOA'].unique()):
+    for msoa in df['MSOA'].unique():
         for category in df['Crime type'].unique():
             arima_data = ARIMA_DATA(df, msoa, category)
             stationary_data = ARIMA_STATIONARY(arima_data)
@@ -84,12 +90,22 @@ def get_best_models(df, df_test):
             stationary_test = ARIMA_STATIONARY(arima_test)
             p, q, aic, mase = ARIMA_OPTIMAL(stationary_data, stationary_test)
             param.append((msoa, category, p, q, aic, mase))
+
+        models_trained += 1
+        if (models_trained % 5 == 0):
+            print("Thread " + str(index + 1) + " trained " + str(models_trained) + "/" + str(total_msoas) + " msoa's")
             
     return pd.DataFrame(param, columns=['MSOA', 'Crime type', 'p', 'q', 'aic', 'MASE'])
 
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+def thread(df, df_test, result, index):
+    result[index] = get_best_models(df, df_test, index)
+
 
 if __name__ == "__main__":
-
     print("Open train set")
     train = pd.read_csv("datasets/train.csv")
     train.drop("Unnamed: 0", axis=1, inplace=True)
@@ -98,6 +114,26 @@ if __name__ == "__main__":
     test = pd.read_csv("datasets/test.csv")
     test.drop("Unnamed: 0", axis=1, inplace=True)
 
-    print("Find best models")
+    processes = multiprocessing.cpu_count()
+    print("Find best models. Using " + str(processes) + " threads")
+    msoa_list = train['MSOA'].unique()
+    set_size = math.ceil(len(msoa_list) / processes)
+
+    threads = [None] * processes
+    results = [None] * processes
+
+    i = 0
+
+    # Create multithreaded processes
+    for msoa_set in chunks(msoa_list, set_size):
+        threads[i] = Process(target=thread, args=(train[train['MSOA'].isin(msoa_set)], test[test['MSOA'].isin(msoa_set)], results, i))
+        threads[i].start()
+        i += 1
+
+    for i in range(len(threads)):
+        threads[i].join()
+        best_models = pd.concat([best_models, results[i]], axis=0, ignore_index=True)
+
+    print("Export best models")
     best_models = get_best_models(train, test)
     best_models.to_csv("best_models.csv")
