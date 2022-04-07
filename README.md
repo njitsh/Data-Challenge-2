@@ -31,15 +31,18 @@ In both the `Pre-processing.ipynb` and `Final dashboard.ipynb` in the beginning 
 ### Preprocessing
 Whenever you want to run the `Pre-processing.ipynb` to get the output of `train.csv`, `test.csv`, and `complete.csv` yourself, that is possible. You can simply open the file and run it. When running, you need to have the `MSOA-Names.csv` file ready in the `datasets` folder, and the tool will ask you to provide the location of the original dataset folder (containing the street files (the other files do not need to be filtered out however)). The original dataset is not on GitHub, and has to be provided by the user. Whenever you run the file, after a while, the `train.csv`, `test.csv`, and `complete.csv` files will get exported to the `datasets` folder (which should already exist) and be located where `Pre-processing.ipynb` is located. 
 
+### Generate best models
 Whenever you want to run the `getBestModels.py` to get the output of `best_models.csv` yourself, that is possible as well. The user has to change the directories of the `train.csv` and `test.csv` file accordingly. Running this script takes quite an amount of time, so this is not recommended.
 
+### Visualise results
 If you want to use the visualization tool, you can run `Final dashboard.ipynb` in the same way as `Pre-processing.ipynb`. However, one again, you have to change some lines that contain 
 local directories.  Whenever you run the file, it takes a while for the local visualization tool server to start. This takes around a couple of minutes, however, it might be faster depending on the specification and performance of your machine. When the tool is ready to open, you can open http://127.0.0.1:8050/ in your
 browser, or click the link in the 'run' tab of your IDE or Jupyter Notebook. 
 
+## The tool
 In the tool, the following elements can be found:
-- In the top a tab selector can be seen. This makes it easy for the user to switch between different views (Analysis (comparison and hotspot-analysis), and forecasting)
-- On the left a widget screen where different conditions and variables can be selected
-- In the middle the visualisation of the selected tab, condition and variables
+- In the top a tab selector can be seen. This makes it easy for the user to switch between different views (Analysis (comparison and hotspot-analysis), and forecasting).
+- On the left a widget screen where different conditions and variables can be selected.
+- In the middle the visualisation of the selected tab, condition and variables.
 
 Hopefully everything is clear and the tool is ready to be used!
