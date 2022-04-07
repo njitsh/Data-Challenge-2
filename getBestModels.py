@@ -106,7 +106,7 @@ def chunks(lst, n):
 
 def thread(df, df_test, index):
     best_models = get_best_models(df, df_test, index)
-    best_models.to_csv("best_models_" + str(index + 1) + ".csv")
+    best_models.to_csv("datasets/best_models_" + str(index + 1) + ".csv")
 
 
 if __name__ == "__main__":
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     for index in range(len(threads)):
         threads[index].join()
         print("Exporting results from thread " + str(index + 1))
-        best_models = pd.concat([best_models, pd.read_csv("best_models_" + str(index + 1) + ".csv")], axis=0, ignore_index=True)
+        best_models = pd.concat([best_models, pd.read_csv("datasets/best_models_" + str(index + 1) + ".csv")], axis=0, ignore_index=True)
 
     print("Export best models")
-    best_models.to_csv("best_models.csv")
+    best_models.to_csv("datasets/best_models.csv")
