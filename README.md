@@ -30,6 +30,8 @@ The .ipynb files can be used in any preferred way to run the .ipynb files, which
 ### Dependencies
 In both the `Pre-processing.ipynb` and `Final dashboard.ipynb` in the beginning a import section of libraries has been given. All of the stated libraries have to be installed before they can be imported. This is crucial for the tool to run in a proper way.
 
+While installing the GeoPandas library you might occur some difficulies. This can easily be fixed by creating a new environment and installing needed libraries as needed in the dashboard.
+
 ### Preprocessing
 Whenever you want to run the `Pre-processing.ipynb` to get the output of `train.csv`, `test.csv`, and `complete.csv` yourself, that is possible. You can simply open the file and run it. When running, you need to have the `MSOA-Names.csv` file ready in the `datasets` folder, and the tool will ask you to provide the location of the original dataset folder (containing the street files (the other files do not need to be filtered out however)). The original dataset is not on GitHub, and has to be provided by the user. Whenever you run the file, after a while, the `train.csv`, `test.csv`, and `complete.csv` files will get exported to the `datasets` folder (which should already exist) and be located where `Pre-processing.ipynb` is located. 
 
