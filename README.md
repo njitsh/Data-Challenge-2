@@ -20,6 +20,8 @@ In `datasets` all of the following files are stored:
 - `MSOA-Names.csv` -> This file contains all of the MSOA names with their corresponding LSOA number.
 - `best_models.csv` -> This file contains the parameters for the ARIMA models, and also the AIC and MASE from the ARIMA models. This file is exported by `getBestModels.py`
 
+There is also the data needed provided by the course. Only the 'street.csv' files are needed to run the dashboard tool. As these files are 1) too large and 2) too many to store on GitHub, these could not be uploaded to GitHub. Therefore, the user must download these themselves via the link from the handbook of the course.
+
 The zip files within the `datasets` folder should be unzipped first before they can be used.
 
 The .ipynb files can be used in any preferred way to run the .ipynb files, which are mainly Jupyter Notebooks. However, they can be exported to a .py file to run them in any IDE that supports .py files to the users desires.
